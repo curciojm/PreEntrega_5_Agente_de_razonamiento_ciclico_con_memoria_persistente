@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.test_checkpoints.sqlite
+.checkpoints.sqlite
+.traces/
+*.log
