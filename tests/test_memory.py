@@ -21,6 +21,9 @@ async def test_memory_same_thread(monkeypatch, tmp_path):
 
     class FakeLLM:
 
+        def bind_tools(self, tools):
+            return self
+
         async def ainvoke(self, messages):
 
             llamadas.append(messages)
@@ -29,10 +32,12 @@ async def test_memory_same_thread(monkeypatch, tmp_path):
 
     import nodes
 
+    fake_llm = FakeLLM()
+
     monkeypatch.setattr(
         nodes,
-        "llm_tools",
-        FakeLLM()
+        "get_model",
+        lambda _: fake_llm,
     )
 
     database = tmp_path / "memory.sqlite"

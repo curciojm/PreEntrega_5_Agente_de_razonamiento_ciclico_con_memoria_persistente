@@ -1,66 +1,66 @@
 import pytest
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+from errors import LLMError, LLMErrorType
 from nodes import call_model
-from schemas import LLMError, LLMErrorType
 
 
 @pytest.mark.asyncio
 async def test_call_model(monkeypatch):
-
-    respuesta = AIMessage(
-        content="La correlación estudia la relación entre dos variables."
-    )
+    respuesta = AIMessage(content="Respuesta de prueba")
 
     class FakeLLM:
+        def bind_tools(self, tools):
+            return self
 
         async def ainvoke(self, messages):
-            assert isinstance(messages[0], type(messages[0]))
+            assert isinstance(messages[0], SystemMessage)
             assert isinstance(messages[-1], HumanMessage)
-            assert messages[-1].content == "¿Qué es la correlación?"
-
             return respuesta
+
+    fake_llm = FakeLLM()
 
     import nodes
 
     monkeypatch.setattr(
         nodes,
-        "llm_tools",
-        FakeLLM()
+        "get_model",
+        lambda provider: fake_llm,
     )
 
     state = {
         "messages": [
-            HumanMessage(content="¿Qué es la correlación?")
+            HumanMessage(content="¿Qué es la regresión?")
         ]
     }
 
     resultado = await call_model(state)
 
-    assert "messages" in resultado
-    assert len(resultado["messages"]) == 1
-    assert resultado["messages"][0] == respuesta
+    assert resultado["messages"] == [respuesta]
 
 
 @pytest.mark.asyncio
 async def test_call_model_clasifica_error(monkeypatch):
-
     class FakeLLM:
+        def bind_tools(self, tools):
+            return self
 
         async def ainvoke(self, messages):
-            raise ValueError("Error de prueba")
+            raise ValueError("Error simulado")
+
+    fake_llm = FakeLLM()
 
     import nodes
 
     monkeypatch.setattr(
         nodes,
-        "llm_tools",
-        FakeLLM()
+        "get_model",
+        lambda provider: fake_llm,
     )
 
     state = {
         "messages": [
-            HumanMessage(content="¿Qué es la correlación?")
+            HumanMessage(content="¿Qué es la regresión?")
         ]
     }
 

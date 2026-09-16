@@ -62,8 +62,12 @@ async def buscar_fuente(tema: str) -> list[ResultadoFuente]:
         ]
 
     except Exception as e:
-        logger.error(f"Error durante la ejecución: {e}")
-        raise classify_error(e)
+        error = classify_error(e)
+        logger.error(
+            "Error durante la ejecución de buscar_concepto: %s",
+            error.message,
+        )
+    raise error
 
 
 tools = [buscar_concepto, buscar_fuente]

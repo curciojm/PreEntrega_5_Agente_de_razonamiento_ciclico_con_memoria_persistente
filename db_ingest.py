@@ -49,7 +49,6 @@ async def setup_vector_infrastructure(
             .get("vector_count", 0)
         )
 
-        # 3. Si no hay vectores, procesar e indexar documentos
         if vector_count == 0:
             logger.info(
                 "Índice disponible pero sin vectores — "

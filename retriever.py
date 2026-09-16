@@ -4,8 +4,7 @@ from langchain_community.retrievers import BM25Retriever
 from db_config import DIMENSIONS, INDEX_NAME
 from db_ingest import setup_vector_infrastructure
 
-# En esta PreEntrega se crea el retriever como variable temporal para evitar la creacion del index por cada turno donde
-# se ejecuta una tool
+# Cache del retriever para reutilizarlo durante la ejecución del proceso.
 _retriever_hibrido = None
 
 
@@ -14,7 +13,6 @@ async def get_retriever_hibrido() -> EnsembleRetriever:
 
     if _retriever_hibrido is None:
         _, vectorstore, documentos_procesados = (
-            # primera creacion de lindex y dimensiones
             await setup_vector_infrastructure(
                 INDEX_NAME,
                 DIMENSIONS,
@@ -31,8 +29,7 @@ async def get_retriever_hibrido() -> EnsembleRetriever:
             search_kwargs={"k": 5},
         )
 
-        # Los mejores resultados de Recall@5 y Precision@5
-        # se obtuvieron con estos pesos (ver reporte PreEntrega 4).
+        # Pesos seleccionados a partir de la evaluación de Precision@5 y Recall@5 de la PreEntrega 4.
         _retriever_hibrido = EnsembleRetriever(
             retrievers=[retriever_bm25, retriever_vectorial],
             weights=[0.25, 0.75],

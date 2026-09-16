@@ -47,18 +47,21 @@ async def test_graph_realiza_ciclo_multistep(monkeypatch):
 
     class FakeLLM:
 
+        def bind_tools(self, tools):
+            return self
+
         async def ainvoke(self, messages):
-
             llamadas_llm.append(messages)
-
             return respuestas_llm[len(llamadas_llm) - 1]
+
+    fake_llm = FakeLLM()
 
     import nodes
 
     monkeypatch.setattr(
         nodes,
-        "llm_tools",
-        FakeLLM()
+        "get_model",
+        lambda _: fake_llm,
     )
 
     @tool
@@ -129,14 +132,10 @@ async def test_graph_realiza_ciclo_multistep(monkeypatch):
     tool_calls = []
 
     for mensaje in mensajes:
-        # hasattr consulta si mensaje tiene el atributo de la derecha
-        # es importnate, porque asi verificamos si AIMessage llamo a las tools
-        # Si este mensaje tiene tool_calls y además hay al menos una llamada de herramienta dentro
         if hasattr(mensaje, "tool_calls") and mensaje.tool_calls:
             tool_calls.extend(mensaje.tool_calls)
 
     assert len(llamadas_llm) == 3
-
     assert len(tool_calls) == 2
 
     assert tool_calls[0]["name"] == "buscar_concepto_test"

@@ -25,11 +25,10 @@ async def call_model(state: MessagesState) -> dict:
         try:
             logger.info("Intentando utilizar proveedor LLM: %s", provider)
 
-            # BIND DE TOOL AL NODO
             llm = get_model(provider)
             llm_tools = llm.bind_tools(tools)
 
-            # Latencia para evitar saturación del proveedor
+            # Pausa entre solicitudes para reducir la frecuencia de llamadas al proveedor.
             await asyncio.sleep(5)
 
             response = await llm_tools.ainvoke(messages)

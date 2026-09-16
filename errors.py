@@ -11,7 +11,7 @@ def classify_error(error: Exception) -> LLMError:
             "Las credenciales del proveedor no son válidas.",
         )
 
-    # Límite de solicitudes diarias
+    # Límite de solicitudes o cuota
     if status_code == 429:
         return LLMError(
             LLMErrorType.RATE_LIMIT,

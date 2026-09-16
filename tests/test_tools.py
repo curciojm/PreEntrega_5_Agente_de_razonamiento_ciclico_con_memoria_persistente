@@ -60,7 +60,6 @@ async def test_buscar_concepto(monkeypatch):
 
 
 @pytest.mark.asyncio
-# mark.asyncio: Esta función de test es asíncrona (async def) y necesita ejecutarse dentro de un event loop de asyncio
 async def test_buscar_fuente(monkeypatch):
 
     documentos = [

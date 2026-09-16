@@ -11,11 +11,11 @@ CONFIG = {
     "recursion_limit": 10,
 }
 
-
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_agent_multistep():
     pregunta = (
-        "Explicame qué es el diseño experimental "
+        "Explicame qué es la regresión "
         "y además decime en qué fuente y página puedo leer "
         "más sobre este tema."
     )
@@ -62,3 +62,8 @@ async def test_agent_multistep():
         "El agente debería realizar al menos "
         "dos llamadas a herramientas."
     )
+
+    nombres_tools = [tool_call["name"] for tool_call in tool_calls]
+
+    assert "buscar_concepto" in nombres_tools
+    assert "buscar_fuente" in nombres_tools

@@ -3,7 +3,6 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
-# Respuesta del modelo
 class ResultadoConcepto(BaseModel):
     fuente: str = Field(description="Fuente bibliográfica del fragmento recuperado.")
     contenido: str = Field(description="Contenido relevante recuperado del documento.")
@@ -11,10 +10,9 @@ class ResultadoConcepto(BaseModel):
 
 class ResultadoFuente(BaseModel):
     fuente: str = Field(description="Fuente bibliográfica del documento.")
-    # Se fuerza pagina a entero porque pinecone suele poner algunos numeros de pagina como float
+    # Se fuerza a entero porque Pinecone puede devolver el número de página como float.
     pagina: int = Field(description="Número entero de página donde aparece la información.")
 
-# Errores
 class LLMErrorType(str, Enum):
     """Tipos de errores utilizados para clasificar las excepciones."""
 

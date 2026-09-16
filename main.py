@@ -1,15 +1,15 @@
 import asyncio
-from trace import extraer_texto, guardar_traza, serializar_traza
 
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from agent import graph
 from schemas import LLMError
+from trace_utils import extraer_texto, guardar_traza, serializar_traza
 
 CONFIG = {
     "configurable": {
-         # Para generar un nuevo json cambiar el nombre
+         # Identificador persistente de la conversación.
         "thread_id": "conversacion-rag-1"
     },
     "recursion_limit": 10,
