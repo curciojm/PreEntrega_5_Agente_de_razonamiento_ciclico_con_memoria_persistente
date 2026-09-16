@@ -32,13 +32,10 @@ async def test_buscar_concepto(monkeypatch):
             assert query == "¿Qué es la correlación?"
             return documentos
 
-    async def fake_get_retriever():
-        return FakeRetriever()
-
     monkeypatch.setattr(
         tools,
-        "get_retriever_hibrido",
-        fake_get_retriever
+        "retriever_hibrido",
+        FakeRetriever(),
     )
 
     resultado = await buscar_concepto.ainvoke(
@@ -85,15 +82,10 @@ async def test_buscar_fuente(monkeypatch):
             assert query == "correlación"
             return documentos
 
-    import tools
-
-    async def fake_get_retriever():
-        return FakeRetriever()
-
     monkeypatch.setattr(
         tools,
-        "get_retriever_hibrido",
-        fake_get_retriever
+        "retriever_hibrido",
+        FakeRetriever(),
     )
 
     resultado = await buscar_fuente.ainvoke(
@@ -124,15 +116,10 @@ async def test_buscar_concepto_clasifica_error(monkeypatch):
         async def ainvoke(self, query):
             raise ValueError("Error de prueba")
 
-    import tools
-
-    async def fake_get_retriever():
-        return FakeRetriever()
-
     monkeypatch.setattr(
         tools,
-        "get_retriever_hibrido",
-        fake_get_retriever
+        "retriever_hibrido",
+        FakeRetriever(),
     )
 
     with pytest.raises(LLMError) as exc_info:
