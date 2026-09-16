@@ -39,7 +39,6 @@ async def call_model(state: MessagesState) -> dict:
             )
 
             return {"messages": [response]}
-
         
         except Exception as e:
             last_error = e

@@ -10,7 +10,7 @@ from trace_utils import extraer_texto, guardar_traza, serializar_traza
 CONFIG = {
     "configurable": {
          # Identificador persistente de la conversación.
-        "thread_id": "conversacion-rag-0"
+        "thread_id": "conversacion-rag-1"
     },
     "recursion_limit": 10,
 }

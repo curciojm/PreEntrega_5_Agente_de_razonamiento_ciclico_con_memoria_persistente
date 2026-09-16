@@ -4,92 +4,74 @@ from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
 
 from db_config import DIMENSIONS, EMBEDDINGS, INDEX_NAME, NAMESPACE, PINECONE_API_KEY
-from logging_config import logger
 from setup import procesamiento_desde_pdfs, recuperar_documentos_de_pinecone
 
 
 async def setup_vector_infrastructure(
-    index_name: str = INDEX_NAME,
-    dimensions: int = DIMENSIONS,
+    INDEX_NAME: str,
+    DIMENSIONS: int
 ):
+
     pc = Pinecone(api_key=PINECONE_API_KEY)
 
-    if index_name not in pc.list_indexes().names():
-        try:
-            logger.info("Índice inexistente — creando índice")
+    if INDEX_NAME not in pc.list_indexes().names():
 
-            pc.create_index(
-                name=index_name,
-                dimension=dimensions,
-                metric="cosine",
-                spec=ServerlessSpec(
-                    cloud="aws",
-                    region="us-east-1",
-                ),
+        print(f"Creando índice: {INDEX_NAME}...")
+
+        pc.create_index(
+            name=INDEX_NAME,
+            dimension=DIMENSIONS,
+            metric="cosine",
+            spec=ServerlessSpec(
+                cloud="aws",
+                region="us-east-1"
             )
-
-            while not pc.describe_index(index_name).status["ready"]:
-                await asyncio.sleep(5)
-
-        except Exception as e:
-            logger.exception(
-                "Error durante la creación del índice: %s",
-                e,
-            )
-            raise
-
-    index = pc.Index(index_name)
-
-    try:
-        stats = index.describe_index_stats()
-
-        vector_count = (
-            stats["namespaces"]
-            .get(NAMESPACE, {})
-            .get("vector_count", 0)
         )
 
-        if vector_count == 0:
-            logger.info(
-                "Índice disponible pero sin vectores — "
-                "procesando e indexando documentos por primera vez"
-            )
+        while not pc.describe_index(INDEX_NAME).status["ready"]:
+            await asyncio.sleep(1)
 
-            documentos_procesados = procesamiento_desde_pdfs()
+    index = pc.Index(INDEX_NAME)
 
-            vectorstore = PineconeVectorStore.from_documents(
-                documents=documentos_procesados,
-                embedding=EMBEDDINGS,
-                index_name=index_name,
-                namespace=NAMESPACE,
-            )
+    stats = index.describe_index_stats()
 
-        else:
-            logger.info(
-                "Índice existente con %s vectores — "
-                "reutilizando infraestructura",
-                vector_count,
-            )
+    vector_count = (
+        stats["namespaces"]
+        .get(NAMESPACE, {})
+        .get("vector_count", 0)
+    )
 
-            documentos_procesados = recuperar_documentos_de_pinecone(index)
+    if vector_count == 0:
 
-            vectorstore = PineconeVectorStore(
-                index_name=index_name,
-                embedding=EMBEDDINGS,
-                namespace=NAMESPACE,
-            )
+        documentos_procesados = procesamiento_desde_pdfs()
 
-    except Exception as e:
-        logger.exception(
-            "Error durante el procesamiento e indexación de los documentos: %s",
-            e,
+        vectorstore = PineconeVectorStore.from_documents(
+            documents=documentos_procesados,
+            embedding=EMBEDDINGS,
+            index_name=INDEX_NAME,
+            namespace=NAMESPACE,
         )
-        raise
 
-    print("📦 Vectores en el namespace:",
-          stats["namespaces"].get(NAMESPACE, {}),
-          )
+    else:
 
-    logger.info(f"Estado del índice: {stats}")
+        documentos_procesados = recuperar_documentos_de_pinecone(index)
+
+        vectorstore = PineconeVectorStore(
+            index_name=INDEX_NAME,
+            embedding=EMBEDDINGS,
+            namespace=NAMESPACE,
+        )
+
+    print(
+        "📦 Vectores en el namespace:",
+        stats["namespaces"].get(NAMESPACE, {})
+    )
+
+    print(f"Estado del índice: {stats}")
 
     return index, vectorstore, documentos_procesados
+
+
+index, vectorstore, documentos_procesados = asyncio.run(
+    setup_vector_infrastructure(INDEX_NAME, DIMENSIONS)
+)

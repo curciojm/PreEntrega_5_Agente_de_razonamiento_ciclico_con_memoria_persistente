@@ -2,7 +2,7 @@ from langchain_core.tools import tool
 
 from errors import classify_error
 from logging_config import logger
-from retriever import get_retriever_hibrido
+from retriever import retriever_hibrido
 from schemas import ResultadoConcepto, ResultadoFuente
 
 
@@ -20,7 +20,6 @@ async def buscar_concepto(consulta: str) -> list[ResultadoConcepto]:
     try:
         logger.info("Ejecutando buscar_concepto: %s", consulta)
 
-        retriever_hibrido = await get_retriever_hibrido()
         docs = await retriever_hibrido.ainvoke(consulta)
 
         return [
@@ -32,14 +31,12 @@ async def buscar_concepto(consulta: str) -> list[ResultadoConcepto]:
         ]
 
     except Exception as e:
-        logger.exception(
-            "Error durante la ejecución de buscar_fuente"
+        error = classify_error(e)
+        logger.error(
+            "Error durante la ejecución de buscar_concepto: %s",
+            error.message,
         )
-        raise classify_error(e)
-
-    # except Exception as e:
-    #     logger.error(f"Error durante la ejecución: {e}")
-    #     raise classify_error(e)
+        raise error
 
 
 @tool
@@ -56,7 +53,6 @@ async def buscar_fuente(tema: str) -> list[ResultadoFuente]:
     try:
         logger.info("Ejecutando buscar_fuente: %s", tema)
 
-        retriever_hibrido = await get_retriever_hibrido()
         docs = await retriever_hibrido.ainvoke(tema)
 
         return [
@@ -68,17 +64,12 @@ async def buscar_fuente(tema: str) -> list[ResultadoFuente]:
         ]
 
     except Exception as e:
-        logger.exception(
-            "Error durante la ejecución de buscar_fuente"
+        error = classify_error(e)
+        logger.error(
+            "Error durante la ejecución de buscar_fuente: %s",
+            error.message,
         )
-        raise classify_error(e)
-    # except Exception as e:
-    #     error = classify_error(e)
-    #     logger.error(
-    #         "Error durante la ejecución de buscar_concepto: %s",
-    #         error.message,
-    #     )
-    # raise error
+        raise error
 
 
 tools = [buscar_concepto, buscar_fuente]

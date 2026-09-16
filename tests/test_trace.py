@@ -5,8 +5,6 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from trace_utils import extraer_texto, guardar_traza, serializar_traza
 
 
-
-
 def test_extraer_texto():
 
     mensaje = AIMessage(
