@@ -23,10 +23,10 @@ El agente permite:
 * Persistir el estado del agente utilizando SQLite.
 * Controlar el número máximo de iteraciones mediante `recursion_limit`.
 * Registrar eventos relevantes durante la ejecución.
-* Generar una traza del ciclo ReAct en formato JSON.
+* Generar una traza del ciclo de ejecución en formato JSON.
 * Clasificar errores provenientes de los proveedores LLM.
 * Ejecutar operaciones de manera asíncrona mediante `asyncio`.
-* Realizar pruebas unitarias y de integración mediante `pytest`.
+* Ejecutar pruebas automatizadas mediante `pytest`.
 * Utilizar herramientas simuladas (*mocking*) para probar el ciclo del agente sin realizar llamadas reales al modelo.
 
 El agente utiliza Google Gemini como proveedor LLM y las herramientas se encuentran vinculadas al modelo mediante `bind_tools()`.
@@ -99,7 +99,7 @@ La estructura del grafo es:
                  │      LLM      │
                  └───────┬───────┘
                          │
-                  tools_condition
+                   tools_condition
                     ┌────┴────┐
                     │         │
                    Tools     END
@@ -156,6 +156,8 @@ Respuesta final
 
 De esta manera, una misma interacción puede requerir múltiples llamadas a herramientas antes de alcanzar una respuesta final.
 
+Este comportamiento fue verificado durante la ejecución del agente mediante `main.py` y mediante pruebas simuladas del grafo, sin depender de llamadas reales al modelo para las pruebas automatizadas.
+
 ## Memoria persistente
 
 La memoria del agente se implementa mediante `AsyncSqliteSaver`.
@@ -197,7 +199,7 @@ Durante la ejecución, el agente puede:
 6. Generar la respuesta final.
 7. Guardar la traza de la conversación en formato JSON.
 
-El archivo SQLite utilizado para la persistencia se genera localmente y no se incluye en el repositorio.
+El archivo SQLite utilizado para la persistencia se genera localmente y no se incluye en el repositorio pero se genera automaticamente durante la ejecución.
 
 ## Manejo de errores
 
@@ -225,51 +227,32 @@ La configuración utiliza el nivel `INFO`, por lo que se muestran en consola los
 
 Los logs permiten observar el ciclo de ejecución y facilitan la identificación de errores sin registrar claves de API u otra información sensible.
 
-## Testing
+Testing
 
-Se incorporaron pruebas automatizadas utilizando `pytest` y `pytest-asyncio`.
+Se incorporaron pruebas automatizadas utilizando pytest y pytest-asyncio.
 
 Las pruebas permiten verificar los distintos componentes del sistema sin depender de llamadas reales al modelo cuando no es necesario.
 
 Se incluyen pruebas para:
 
-* Ejecución del nodo LLM.
-* Clasificación de errores del modelo.
-* Ejecución de las herramientas.
-* Clasificación de errores de las herramientas.
-* Funcionamiento del grafo.
-* Ejecución de ciclos con múltiples llamadas a herramientas.
-* Persistencia de memoria entre diferentes turnos.
-* Serialización de la traza ReAct.
-* Guardado de trazas independientes.
+Ejecución del nodo LLM.
+Clasificación de errores del modelo.
+Ejecución de las herramientas.
+Clasificación de errores de las herramientas.
+Funcionamiento del grafo.
+Ejecución de ciclos con múltiples llamadas a herramientas mediante mocking.
+Persistencia de memoria entre diferentes turnos.
+Serialización de la traza de ejecución.
+Guardado de trazas independientes.
+Ejecución de los tests
 
-### Ejecución de los tests
+Los tests automatizados pueden ejecutarse mediante:
 
-Los tests unitarios y simulados pueden ejecutarse mediante:
+pytest -v
 
-```bash
-pytest -v -m "not integration"
-```
+La integración real del agente también fue verificada mediante la ejecución de main.py, utilizando el modelo y las herramientas reales. Esta prueba permitió observar una interacción que requirió múltiples herramientas y una segunda interacción utilizando el mismo estado persistente de conversación.
 
-Las pruebas de integración se encuentran separadas en:
-
-```text
-tests/integration/
-```
-
-y requieren acceso a los servicios externos utilizados por el agente.
-
-Para ejecutar las pruebas de integración:
-
-```bash
-pytest -v -m integration
-```
-
-La prueba de integración principal verifica que el agente pueda utilizar al menos dos herramientas durante una misma interacción antes de generar la respuesta final.
-
-**La prueba de integración consume una cantidad considerable de tokens, por lo que si se utiliza un free tier se recomienda realizarla al final de las pruebas del proyecto.**
-
-## Traza ReAct
+## Traza de ejecución
 
 El proyecto genera una traza de las interacciones realizadas por el agente en formato JSON.
 
@@ -299,22 +282,22 @@ traces/conversacion-rag-0.json
 
 La traza permite verificar que el agente puede realizar más de una llamada a herramientas antes de producir una respuesta final.
 
+La traza representa el ciclo de ejecución observable del agente; no contiene ni pretende representar razonamientos internos no expuestos por el modelo.
+
 ## Estructura del proyecto
 
 ```text
 ├── tests/
-│   ├── integration/
-│   │   └── test_multistep.py
 │   ├── test_graph.py
 │   ├── test_memory.py
 │   ├── test_nodes.py
 │   ├── test_tools.py
-│   └── test_trace.py
+│   └── test_trace_utils.py
 │
 ├── traces/
 │   └── conversacion-rag-0.json
 │
-├── agent.py                  # Definición del StateGraph
+├── agent.py                  # Construcción y conexión del StateGraph
 ├── chunking.py               # Limpieza y división de documentos
 ├── db_config.py              # Configuración de embeddings y Pinecone
 ├── db_ingest.py              # Ingesta y configuración de la infraestructura RAG
@@ -322,7 +305,7 @@ La traza permite verificar que el agente puede realizar más de una llamada a he
 ├── logging_config.py         # Configuración del sistema de logs
 ├── main.py                   # Punto de entrada y ejecución del agente
 ├── model.py                  # Configuración de los proveedores LLM
-├── nodes.py                  # Nodo LLM y nodo de herramientas
+├── nodes.py                  # Nodo LLM y configuración del ToolNode
 ├── prompt_config.py          # Configuración del prompt del agente
 ├── retriever.py              # Configuración del retriever híbrido
 ├── schemas.py                # Modelos y tipos utilizados por el sistema

@@ -29,7 +29,7 @@ async def call_model(state: MessagesState) -> dict:
             llm_tools = llm.bind_tools(tools)
 
             # Pausa entre solicitudes para reducir la frecuencia de llamadas al proveedor.
-            await asyncio.sleep(5)
+            #await asyncio.sleep(5)
 
             response = await llm_tools.ainvoke(messages)
 
