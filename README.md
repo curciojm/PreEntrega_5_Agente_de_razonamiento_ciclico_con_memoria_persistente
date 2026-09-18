@@ -227,7 +227,7 @@ La configuración utiliza el nivel `INFO`, por lo que se muestran en consola los
 
 Los logs permiten observar el ciclo de ejecución y facilitan la identificación de errores sin registrar claves de API u otra información sensible.
 
-Testing
+## Testing
 
 Se incorporaron pruebas automatizadas utilizando pytest y pytest-asyncio.
 
@@ -248,7 +248,9 @@ Ejecución de los tests
 
 Los tests automatizados pueden ejecutarse mediante:
 
+```bash
 pytest -v
+```
 
 La integración real del agente también fue verificada mediante la ejecución de main.py, utilizando el modelo y las herramientas reales. Esta prueba permitió observar una interacción que requirió múltiples herramientas y una segunda interacción utilizando el mismo estado persistente de conversación.
 
